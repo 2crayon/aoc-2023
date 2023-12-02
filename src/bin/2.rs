@@ -1,9 +1,5 @@
 use itertools::Itertools;
 
-const RED: i32 = 12;
-const GREEN: i32 = 13;
-const BLUE: i32 = 14;
-
 fn main() {
     let input = include_str!("../../input.txt");
 
@@ -11,42 +7,34 @@ fn main() {
 
     let mut sum = 0;
 
-    for (game_id, line) in lines {
+    for (_, line) in lines {
         let pad = line.find(": ").unwrap() + 2;
         let line = &line[pad..];
 
         let sets = line.split("; ");
 
-        let mut game_is_impossible = false;
+        let mut most_red = 0;
+        let mut most_green = 0;
+        let mut most_blue = 0;
+
         for set in sets {
-            if is_impossible(set) {
-                game_is_impossible = true;
-                break;
+            let groups = set.split(", ");
+            let groups = groups.map(|group| {
+                let (amount, color) = group.split(" ").collect_tuple::<(_, _)>().unwrap();
+                return (amount.parse::<usize>().unwrap(), color);
+            });
+            for (amount, color) in groups {
+                match color {
+                    "red" => most_red = most_red.max(amount),
+                    "green" => most_green = most_green.max(amount),
+                    "blue" => most_blue = most_blue.max(amount),
+                    _ => panic!(),
+                }
             }
         }
 
-        if !game_is_impossible {
-            sum += game_id;
-        }
+        sum += most_red * most_green * most_blue;
     }
 
-    println!("{:?}", sum);
-}
-
-fn is_impossible(set: &str) -> bool {
-    let batches = set.split(", ");
-    for batch in batches {
-        let (amount, color) = batch.split(" ").collect_tuple::<(_, _)>().unwrap();
-
-        let amount = amount.parse::<i32>().unwrap();
-
-        if color == "red" && amount > RED
-            || color == "green" && amount > GREEN
-            || color == "blue" && amount > BLUE
-        {
-            return true;
-        }
-    }
-
-    return false;
+    println!("{}", sum);
 }
