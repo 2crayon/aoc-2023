@@ -1,5 +1,11 @@
 use itertools::Itertools;
 
+#[derive(Debug, Clone, Copy)]
+struct Card {
+    id: usize,
+    score: usize,
+}
+
 fn main() {
     let input = include_str!("../../input.txt");
     let pad = input.find(':').unwrap() + 2;
@@ -18,26 +24,46 @@ fn main() {
         })
         .collect::<Vec<_>>();
 
-    let scores = cards.iter().map(|card| score(card)).collect::<Vec<_>>();
+    let mut cards = cards
+        .iter()
+        .enumerate()
+        .map(|(i, card)| Card {
+            id: i,
+            score: matches(card),
+        })
+        .collect::<Vec<_>>();
 
-    println!("{:#?}", scores.iter().sum::<i32>());
+    let original_cards = cards.clone();
+
+    for i in 0..original_cards.len() {
+        let count = cards
+            .iter()
+            .filter(|card| card.id == i)
+            .collect::<Vec<_>>()
+            .len();
+        let score = original_cards[i].score;
+
+        for j in 1..=score {
+            for _ in 0..count {
+                cards.push(original_cards[i + j]);
+            }
+        }
+    }
+
+    println!("{}", cards.len());
 }
 
-fn score((win_nums, rolled_nums): &(Vec<&str>, Vec<&str>)) -> i32 {
-    let mut score = 0i32;
+fn matches((win_nums, rolled_nums): &(Vec<&str>, Vec<&str>)) -> usize {
+    let mut matches = 0;
 
     for &n in win_nums {
         for &r in rolled_nums {
             if n == r {
-                if score == 0 {
-                    score = 1;
-                } else {
-                    score *= 2;
-                }
+                matches += 1;
                 break;
             }
         }
     }
 
-    return score;
+    return matches;
 }
