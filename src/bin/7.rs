@@ -36,11 +36,21 @@ impl Play {
             card_counts[card_to_num(card)] += 1;
         });
 
-        let matches = card_counts
+        let jokers = card_counts[0];
+        let other_cards = card_counts[1..].to_vec();
+
+        if jokers == 5 {
+            return FIVE_OF_A_KIND;
+        }
+
+        let mut matches = other_cards
             .into_iter()
             .filter(|&c| c != 0)
             .sorted()
             .collect::<Vec<_>>();
+
+        let len = matches.len();
+        matches[len - 1] += jokers;
 
         match matches.len() {
             1 => FIVE_OF_A_KIND,
@@ -67,16 +77,16 @@ impl Play {
 
 fn card_to_num(card: char) -> usize {
     match card {
-        '2' => 0,
-        '3' => 1,
-        '4' => 2,
-        '5' => 3,
-        '6' => 4,
-        '7' => 5,
-        '8' => 6,
-        '9' => 7,
-        'T' => 8,
-        'J' => 9,
+        'J' => 0,
+        '2' => 1,
+        '3' => 2,
+        '4' => 3,
+        '5' => 4,
+        '6' => 5,
+        '7' => 6,
+        '8' => 7,
+        '9' => 8,
+        'T' => 9,
         'Q' => 10,
         'K' => 11,
         'A' => 12,
